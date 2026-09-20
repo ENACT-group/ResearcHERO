@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResearcHERO Lab Task Manager</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col md:flex-row overflow-x-hidden">
+
+<div id="auth-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl relative">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-indigo-500/30 mb-3">
+                <i class="fa-solid fa-atom text-2xl text-white"></i>
+            </div>
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">ResearcHERO</h1>
+            <p class="text-slate-400 text-sm mt-1">Interdisciplinary Research Operations Hub</p>
+        </div>
+
+        <form id="login-form" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Username</label>
+                <div class="relative">
+                    <i class="fa-solid fa-user absolute left-3 top-3 text-slate-500"></i>
+                    <input type="text" id="login-username" required value="awlin" placeholder="Username" class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Password</label>
+                <div class="relative">
+                    <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-500"></i>
+                    <input type="password" id="login-password" required value="research2026" placeholder="Password" class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition">
+                </div>
+            </div>
+            <div id="login-error" class="hidden text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg p-2.5 text-center">
+                Invalid credentials.
+            </div>
+            <button type="submit" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-semibold text-white rounded-xl shadow-lg shadow-indigo-600/30 transition transform active:scale-95">
+                Sign In
+            </button>
+        </form>
+
+        <div class="mt-6 pt-4 border-t border-slate-800/80 text-xs text-slate-400">
+            <p class="font-semibold text-slate-300 mb-1">Demo Accounts:</p>
+            <div class="grid grid-cols-2 gap-2 text-[11px]">
+                <div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700/50 cursor-pointer hover:border-indigo-500/50" onclick="fillLogin('awlin', 'research2026')">
+                    <span class="text-amber-400 font-bold"><i class="fa-solid fa-shield-halved mr-1"></i>awlin</span> (Admin)
+                </div>
+                <div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700/50 cursor-pointer hover:border-indigo-500/50" onclick="fillLogin('maya_cs', 'research2026')">
+                    <span class="text-indigo-400 font-semibold">maya_cs</span> (CS)
+                </div>
+                <div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700/50 cursor-pointer hover:border-indigo-500/50" onclick="fillLogin('sam_stats', 'research2026')">
+                    <span class="text-emerald-400 font-semibold">sam_stats</span> (Stats)
+                </div>
+                <div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700/50 cursor-pointer hover:border-indigo-500/50" onclick="fillLogin('elena_qual', 'research2026')">
+                    <span class="text-purple-400 font-semibold">elena_qual</span> (Qual)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<aside class="w-full md:w-64 bg-slate-950 border-r border-slate-800 flex-shrink-0 flex flex-col justify-between">
+    <div>
+        <!-- App Title -->
+        <div class="p-4 border-b border-slate-800/80 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-atom text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-100 tracking-wide leading-none">ResearcHERO</h1>
+                    <span class="text-[10px] text-indigo-400 font-medium">Lab OS v2.6</span>
+                </div>
+            </div>
+            <div id="admin-indicator" class="hidden">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                    <i class="fa-solid fa-crown text-[9px]"></i> ADMIN
+                </span>
+            </div>
+        </div>
+
+        <!-- User Profile Card in Sidebar -->
+        <div class="p-3 bg-slate-900/60 m-3 rounded-xl border border-slate-800 flex items-center justify-between">
+            <div class="flex items-center space-x-3 overflow-hidden">
+                <div id="user-avatar" class="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    AW
+                </div>
+                <div class="truncate">
+                    <div id="user-display-name" class="text-xs font-semibold text-slate-200 truncate">Dr. AW Lin</div>
+                    <div id="user-role-badge" class="text-[10px] text-indigo-400 truncate">Principal Investigator</div>
+                </div>
+            </div>
+            <button onclick="logout()" title="Sign Out" class="text-slate-500 hover:text-slate-300 p-1.5 transition">
+                <i class="fa-solid fa-right-from-bracket text-xs"></i>
+            </button>
+        </div>
+
+        <!-- Main Navigation Links -->
+        <nav class="p-3 space-y-1">
+            <button onclick="switchView('tasks')" id="nav-tasks" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium text-indigo-300 bg-indigo-600/20 border border-indigo-500/30 transition">
+                <i class="fa-solid fa-list-check w-4 text-center"></i>
+                <span>Task Manager</span>
+            </button>
+            <button onclick="switchView('kanban')" id="nav-kanban" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition">
+                <i class="fa-solid fa-columns w-4 text-center"></i>
+                <span>Kanban Board</span>
+            </button>
+            <button onclick="switchView('timeline')" id="nav-timeline" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition">
+                <i class="fa-solid fa-chart-gantt w-4 text-center"></i>
+                <span>Timeline / Gantt</span>
+            </button>
+            <button onclick="switchView('playbooks')" id="nav-playbooks" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition">
+                <i class="fa-solid fa-book-bookmark w-4 text-center"></i>
+                <span>Onboarding Playbooks</span>
+            </button>
+            <button onclick="switchView('simulators')" id="nav-simulators" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition">
+                <i class="fa-solid fa-bolt w-4 text-center"></i>
+                <span>Workflow Automation</span>
+            </button>
+            
+            <!-- Admin Panel Link (Only visible to awlin) -->
+            <button id="admin-nav-item" onclick="switchView('admin')" class="hidden w-full items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-users-gear w-4 text-center"></i>
+                    <span>Lab Member Admin</span>
+                </div>
+                <i class="fa-solid fa-shield text-[10px]"></i>
+            </button>
+        </nav>
+
+        <!-- Project Channels Section -->
+        <div class="p-3 border-t border-slate-800/80">
+            <div class="flex items-center justify-between px-2 mb-2">
+                <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Project Channels</span>
+                <button onclick="openChannelModal()" class="text-slate-400 hover:text-indigo-400 text-xs p-1">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+            <div id="channels-list" class="space-y-1 max-h-48 overflow-y-auto custom-scrollbar">
+                <!-- Channels dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Mascot Widget in Sidebar bottom -->
+    <div class="p-3 border-t border-slate-800 bg-slate-950/80">
+        <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-heart text-rose-500 text-xs"></i>
+                <span class="text-xs font-semibold text-slate-300">Lab Mascot</span>
+            </div>
+            <button onclick="switchView('mascot')" class="text-[10px] text-indigo-400 hover:underline">Interact</button>
+        </div>
+        <div onclick="switchView('mascot')" class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 cursor-pointer hover:border-slate-700 transition flex items-center space-x-3">
+            <div id="sidebar-mascot-avatar" class="text-2xl">🦎</div>
+            <div class="truncate flex-1">
+                <div class="flex items-center justify-between">
+                    <span id="sidebar-mascot-name" class="text-xs font-bold text-slate-200">Toby</span>
+                    <span id="sidebar-mascot-type" class="text-[9px] px-1.5 py-0.2 bg-slate-800 rounded text-slate-400">Axolotl</span>
+                </div>
+                <div class="w-full bg-slate-800 h-1.5 rounded-full mt-1.5 overflow-hidden flex">
+                    <div id="sidebar-mascot-hp" class="bg-emerald-500 h-full" style="width: 80%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<main class="flex-1 flex flex-col min-w-0 bg-slate-900 overflow-y-auto custom-scrollbar">
+    <!-- Global Header -->
+    <header class="bg-slate-950/80 border-b border-slate-800 p-4 sticky top-0 z-30 backdrop-blur flex items-center justify-between gap-4">
+        <div class="flex items-center space-x-3">
+            <h2 id="view-title" class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-indigo-400"></i>
+                <span>Task Manager</span>
+            </h2>
+            <span id="channel-badge" class="hidden text-xs bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 px-2.5 py-0.5 rounded-full font-medium">
+                #all-projects
+            </span>
+        </div>
+
+        <!-- Search & Action Controls -->
+        <div class="flex items-center space-x-3">
+            <div class="relative hidden sm:block">
+                <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                <input type="text" id="global-search" onkeyup="renderCurrentView()" placeholder="Filter tasks, tools, tags..." class="bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 w-48 lg:w-64">
+            </div>
+            <button onclick="openTaskModal()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-md shadow-indigo-600/20 flex items-center space-x-1.5 transition">
+                <i class="fa-solid fa-plus"></i>
+                <span class="hidden sm:inline">New Task</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Containers -->
+    <div class="p-4 md:p-6 flex-1 space-y-6">
+
+        <!-- Methodology Filter Pills -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+            <span class="text-xs text-slate-500 font-medium mr-1 flex-shrink-0">Methodology:</span>
+            <button onclick="setMethodologyFilter('ALL')" id="method-all" class="method-btn text-xs px-3 py-1 rounded-full font-medium bg-indigo-600 text-white transition flex-shrink-0">All</button>
+            <button onclick="setMethodologyFilter('CS')" id="method-CS" class="method-btn text-xs px-3 py-1 rounded-full font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-1.5 flex-shrink-0">
+                <span class="w-2 h-2 rounded-full bg-blue-400"></span> #CS (Code/Repo)
+            </button>
+            <button onclick="setMethodologyFilter('Stats')" id="method-Stats" class="method-btn text-xs px-3 py-1 rounded-full font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-1.5 flex-shrink-0">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> #Stats (Data/REDCap)
+            </button>
+            <button onclick="setMethodologyFilter('Qual')" id="method-Qual" class="method-btn text-xs px-3 py-1 rounded-full font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-1.5 flex-shrink-0">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span> #Qual (NVivo)
+            </button>
+            <button onclick="setMethodologyFilter('Nutrition')" id="method-Nutrition" class="method-btn text-xs px-3 py-1 rounded-full font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-1.5 flex-shrink-0">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span> #Nutrition (Wet Lab)
+            </button>
+        </div>
+
+        <div id="view-tasks-container" class="space-y-4">
+            <div class="bg-slate-950/50 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="p-4 bg-slate-900/80 border-b border-slate-800 flex justify-between items-center">
+                    <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-list text-indigo-400"></i> Active Research Tasks
+                    </h3>
+                    <div id="task-counter" class="text-xs text-slate-400">Showing 0 tasks</div>
+                </div>
+                <div id="task-list" class="divide-y divide-slate-800/60">
+                    <!-- Dynamic tasks -->
+                </div>
+            </div>
+        </div>
+
+        <div id="view-kanban-container" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Todo Column -->
+            <div class="bg-slate-950/50 border border-slate-800 rounded-2xl p-4 flex flex-col h-[650px]">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">To-Do</h4>
+                    </div>
+                    <span id="kanban-todo-count" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">0</span>
+                </div>
+                <div id="kanban-todo" class="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-1"></div>
+            </div>
+
+            <!-- In Progress Column -->
+            <div class="bg-slate-950/50 border border-slate-800 rounded-2xl p-4 flex flex-col h-[650px]">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-indigo-500"></span>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">In Progress</h4>
+                    </div>
+                    <span id="kanban-in-progress-count" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">0</span>
+                </div>
+                <div id="kanban-in-progress" class="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-1"></div>
+            </div>
+
+            <!-- Completed Column -->
+            <div class="bg-slate-950/50 border border-slate-800 rounded-2xl p-4 flex flex-col h-[650px]">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">Completed</h4>
+                    </div>
+                    <span id="kanban-completed-count" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">0</span>
+                </div>
+                <div id="kanban-completed" class="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-1"></div>
+            </div>
+        </div>
+
+        <div id="view-timeline-container" class="hidden space-y-4">
+            <div class="bg-slate-950/50 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-xl">
+                <h3 class="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-gantt text-indigo-400"></i> Project Timeline & Dependencies
+                </h3>
+                <div id="timeline-chart" class="space-y-4">
+                    <!-- Dynamic Gantt bars -->
+                </div>
+            </div>
+        </div>
+
+        <div id="view-playbooks-container" class="hidden space-y-4">
+            <div class="bg-slate-950/50 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-100">Lab Onboarding Playbooks</h3>
+                        <p class="text-xs text-slate-400">Standardized protocol checklists for multidisciplinary onboarding.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- CS Protocol -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-blue-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-code"></i> CS & Computational Pipeline Setup
+                            </span>
+                            <span class="text-[10px] bg-blue-500/10 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/20">3 Tasks</span>
+                        </div>
+                        <p class="text-xs text-slate-400">SSH key generation, Git clone, environment setup & Conda virtual env instantiation.</p>
+                        <button onclick="applyPlaybook('cs')" class="w-full py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 text-xs font-semibold rounded-lg transition">
+                            Import Tasks to Workspace
+                        </button>
+                    </div>
+
+                    <!-- Stats Protocol -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-square-poll-vertical"></i> Biostatistics & REDCap Onboarding
+                            </span>
+                            <span class="text-[10px] bg-emerald-500/10 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/20">3 Tasks</span>
+                        </div>
+                        <p class="text-xs text-slate-400">REDCap API access request, R/Python stats environment check & IRB data safety training.</p>
+                        <button onclick="applyPlaybook('stats')" class="w-full py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold rounded-lg transition">
+                            Import Tasks to Workspace
+                        </button>
+                    </div>
+
+                    <!-- Qual Protocol -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-purple-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-comments"></i> Qualitative & NVivo Workflow
+                            </span>
+                            <span class="text-[10px] bg-purple-500/10 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/20">3 Tasks</span>
+                        </div>
+                        <p class="text-xs text-slate-400">NVivo project key setup, interview transcription pipeline verification, & codebook alignment.</p>
+                        <button onclick="applyPlaybook('qual')" class="w-full py-2 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-semibold rounded-lg transition">
+                            Import Tasks to Workspace
+                        </button>
+                    </div>
+
+                    <!-- Nutrition Protocol -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-vial"></i> Microbiome & Nutrition Assay Setup
+                            </span>
+                            <span class="text-[10px] bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/20">3 Tasks</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Specimen storage log review, 16S sequencing assay protocol, & reagent inventory check.</p>
+                        <button onclick="applyPlaybook('nutrition')" class="w-full py-2 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 text-xs font-semibold rounded-lg transition">
+                            Import Tasks to Workspace
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-simulators-container" class="hidden space-y-4">
+            <div class="bg-slate-950/50 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <h3 class="text-base font-bold text-slate-100 mb-2">Workflow Automation Simulators</h3>
+                <p class="text-xs text-slate-400 mb-6">Test automated trigger hooks between research tools and ResearcHERO tasks.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- GitHub Commit Sim -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <div class="flex items-center space-x-2 text-indigo-400 font-semibold text-xs">
+                            <i class="fa-brands fa-github text-base"></i>
+                            <span>GitHub Webhook Sim</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Simulate pushing code commit to automatically auto-complete computational tasks.</p>
+                        <button onclick="runSim('github')" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition shadow-md shadow-indigo-600/20">
+                            Trigger Commit Event
+                        </button>
+                    </div>
+
+                    <!-- REDCap Data Upload Sim -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <div class="flex items-center space-x-2 text-emerald-400 font-semibold text-xs">
+                            <i class="fa-solid fa-database text-base"></i>
+                            <span>REDCap Ingestion Sim</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Simulate participant record submission to trigger statistics workflow task.</p>
+                        <button onclick="runSim('redcap')" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition shadow-md shadow-emerald-600/20">
+                            Simulate Data Ingest
+                        </button>
+                    </div>
+
+                    <!-- NVivo Transcript Sim -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <div class="flex items-center space-x-2 text-purple-400 font-semibold text-xs">
+                            <i class="fa-solid fa-file-audio text-base"></i>
+                            <span>NVivo Transcript Sim</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Simulate completed qualitative interview transcription sync.</p>
+                        <button onclick="runSim('nvivo')" class="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-lg transition shadow-md shadow-purple-600/20">
+                            Sync New Transcript
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-6 bg-slate-900/80 border border-slate-800 rounded-xl p-4">
+                    <h4 class="text-xs font-bold text-slate-300 mb-2">Automation Execution Log</h4>
+                    <div id="sim-log" class="font-mono text-[11px] text-emerald-400 space-y-1 h-32 overflow-y-auto custom-scrollbar bg-slate-950 p-3 rounded-lg border border-slate-800">
+                        <div>[SYSTEM] Automation listener initialized. Ready for events.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-admin-container" class="hidden space-y-4">
+            <div class="bg-slate-950/50 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="p-1.5 bg-amber-500/20 text-amber-400 rounded-lg text-sm">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </span>
+                            <h3 class="text-base font-bold text-slate-100">Lab Roster & Access Control</h3>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">Admin control panel for adding, editing, and deactivating lab members (User: <span class="text-amber-400 font-mono font-bold">awlin</span>).</p>
+                    </div>
+                    <button onclick="openAddMemberModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-amber-500/20 flex items-center space-x-2 transition">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>Add New Member</span>
+                    </button>
+                </div>
+
+                <!-- Active Members Roster Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="text-slate-400 uppercase tracking-wider bg-slate-900/80 border-b border-slate-800">
+                                <th class="p-3">Member Name</th>
+                                <th class="p-3">Username</th>
+                                <th class="p-3">Discipline / Role</th>
+                                <th class="p-3">System Access</th>
+                                <th class="p-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-roster-body" class="divide-y divide-slate-800/60">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-mascot-container" class="hidden space-y-4">
+            <div class="bg-slate-950/50 border border-slate-800 rounded-2xl p-6 shadow-xl max-w-2xl mx-auto text-center">
+                <!-- Animal Switcher -->
+                <div class="flex justify-center gap-2 mb-6">
+                    <button onclick="selectMascot('axolotl')" id="mascot-tab-axolotl" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 text-white transition">Toby (Axolotl)</button>
+                    <button onclick="selectMascot('microbe')" id="mascot-tab-microbe" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Pip (Microbe)</button>
+                    <button onclick="selectMascot('mouse')" id="mascot-tab-mouse" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Newton (Mouse)</button>
+                    <button onclick="selectMascot('penguin')" id="mascot-tab-penguin" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Penny (Penguin)</button>
+                </div>
+
+                <!-- Mascot Display Box -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-8 relative overflow-hidden mb-6 flex flex-col items-center justify-center min-h-[220px]">
+                    <div id="mascot-speech" class="bg-slate-800 text-slate-200 border border-slate-700 text-xs px-4 py-2 rounded-2xl mb-4 relative max-w-xs shadow-lg animate-bounce">
+                        "Ready to do great science today!"
+                    </div>
+                    <div id="mascot-avatar" class="text-7xl mb-2 select-none transform hover:scale-110 transition duration-300 cursor-pointer" onclick="petMascot()">
+                        🦎
+                    </div>
+                    <h3 id="mascot-full-name" class="text-lg font-bold text-slate-100">Toby the Axolotl</h3>
+                    <p id="mascot-bio" class="text-xs text-slate-400">Lab companion who loves clean datasets and pipetting.</p>
+                </div>
+
+                <!-- Mascot Vitals -->
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl text-left">
+                        <div class="flex justify-between text-xs font-medium mb-1">
+                            <span class="text-slate-400"><i class="fa-solid fa-smile text-amber-400 mr-1"></i> Happiness</span>
+                            <span id="vital-happy-num" class="text-slate-200 font-bold">85%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div id="vital-happy-bar" class="bg-amber-400 h-full transition-all" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl text-left">
+                        <div class="flex justify-between text-xs font-medium mb-1">
+                            <span class="text-slate-400"><i class="fa-solid fa-bolt text-indigo-400 mr-1"></i> Energy</span>
+                            <span id="vital-energy-num" class="text-slate-200 font-bold">70%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div id="vital-energy-bar" class="bg-indigo-400 h-full transition-all" style="width: 70%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl text-left">
+                        <div class="flex justify-between text-xs font-medium mb-1">
+                            <span class="text-slate-400"><i class="fa-solid fa-apple-whole text-rose-400 mr-1"></i> Hunger</span>
+                            <span id="vital-hunger-num" class="text-slate-200 font-bold">90%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div id="vital-hunger-bar" class="bg-rose-400 h-full transition-all" style="width: 90%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interaction Action Buttons -->
+                <div class="flex flex-wrap justify-center gap-3">
+                    <button onclick="feedMascot()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-cookie-bite"></i> Feed Research Snack
+                    </button>
+                    <button onclick="petMascot()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold rounded-xl shadow-md shadow-amber-600/20 flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-hand text-xs"></i> Pet Mascot
+                    </button>
+                    <button onclick="playBreather()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl shadow-md shadow-indigo-600/20 flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-spa"></i> 60s Mindfulness Breather
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Lab Feed Widget -->
+        <div class="bg-slate-950/50 border border-slate-800 rounded-2xl p-4 shadow-xl">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Team Visibility Feed
+            </h4>
+            <div id="live-feed" class="space-y-2 text-xs text-slate-300">
+                <!-- Dynamic Activity Feed Items -->
+            </div>
+        </div>
+
+    </div>
+</main>
+
+
+<!-- 1. Task Modal -->
+<div id="task-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <h3 id="task-modal-title" class="text-base font-bold text-slate-100">Create Research Task</h3>
+            <button onclick="closeTaskModal()" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="task-form" onsubmit="saveTask(event)" class="space-y-3">
+            <input type="hidden" id="task-edit-id" value="">
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Task Title</label>
+                <input type="text" id="task-title" required placeholder="e.g., Run RNA-seq differential expression pipeline" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Project Channel</label>
+                    <select id="task-channel" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                        <!-- Options generated dynamically -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Methodology Focus</label>
+                    <select id="task-method" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                        <option value="CS">#CS (Computer Science)</option>
+                        <option value="Stats">#Stats (Biostatistics)</option>
+                        <option value="Qual">#Qual (Qualitative)</option>
+                        <option value="Nutrition">#Nutrition (Wet Lab)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Assignee</label>
+                    <select id="task-assignee" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Status</label>
+                    <select id="task-status" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                        <option value="todo">To-Do</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Primary Tool Badge</label>
+                    <select id="task-tool" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                        <option value="GitHub">GitHub Repo</option>
+                        <option value="REDCap">REDCap DB</option>
+                        <option value="NVivo">NVivo Qualitative</option>
+                        <option value="BoxDrive">Box / Google Drive</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Target Due Date</label>
+                    <input type="date" id="task-due" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+                <button type="button" onclick="closeTaskModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl shadow-md">Save Task</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 2. Project Channel Modal -->
+<div id="channel-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <h3 class="text-base font-bold text-slate-100">New Project Channel</h3>
+            <button onclick="closeChannelModal()" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="channel-form" onsubmit="saveChannel(event)" class="space-y-3">
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Channel Name</label>
+                <input type="text" id="channel-name" required placeholder="e.g., gut-brain-axis" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+            </div>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+                <button type="button" onclick="closeChannelModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl shadow-md">Create Channel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 3. Admin Add Lab Member Modal (Accessible to awlin) -->
+<div id="admin-member-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-amber-500/30 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-user-plus text-amber-400"></i>
+                <h3 class="text-base font-bold text-slate-100">Add New Lab Member</h3>
+            </div>
+            <button onclick="closeAddMemberModal()" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="add-member-form" onsubmit="saveMember(event)" class="space-y-3">
+            <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Full Name</label>
+                <input type="text" id="member-fullname" required placeholder="e.g., Dr. Jordan Smith" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-amber-500">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Username</label>
+                    <input type="text" id="member-username" required placeholder="jordan_cs" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Initial Password</label>
+                    <input type="text" id="member-password" required value="research2026" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-amber-500">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Discipline Discipline</label>
+                    <select id="member-discipline" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-amber-500">
+                        <option value="CS">Computer Science (CS)</option>
+                        <option value="Stats">Biostatistics (Stats)</option>
+                        <option value="Qual">Qualitative Analysis</option>
+                        <option value="Nutrition">Nutrition / Wet Lab</option>
+                        <option value="PI">Principal Investigator</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Role / Permissions</label>
+                    <select id="member-role" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-amber-500">
+                        <option value="Researcher">Standard Researcher</option>
+                        <option value="Lead">Project Lead</option>
+                        <option value="Admin">Administrator</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+                <button type="button" onclick="closeAddMemberModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-md">Add to Roster</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    /* Global Application State */
+    const STORAGE_KEY_USERS = 'researchero_users_v2';
+    const STORAGE_KEY_TASKS = 'researchero_tasks_v2';
+    const STORAGE_KEY_CHANNELS = 'researchero_channels_v2';
+    const STORAGE_KEY_SESSION = 'researchero_session_v2';
+
+    // Default Seed Data
+    const defaultUsers = [
+        { id: 'u1', username: 'awlin', name: 'Dr. AW Lin', role: 'PI', admin: true, pass: 'research2026', discipline: 'PI' },
+        { id: 'u2', username: 'maya_cs', name: 'Maya Lin', role: 'Bioinformatics Lead', admin: false, pass: 'research2026', discipline: 'CS' },
+        { id: 'u3', username: 'sam_stats', name: 'Sam Chen', role: 'Biostatistician', admin: false, pass: 'research2026', discipline: 'Stats' },
+        { id: 'u4', username: 'elena_qual', name: 'Elena Rostova', role: 'Qualitative Researcher', admin: false, pass: 'research2026', discipline: 'Qual' }
+    ];
+
+    const defaultChannels = ['personalized-nutrition', 'microbiome-pipeline', 'gut-brain-axis', 'dietary-survey'];
+
+    const defaultTasks = [
+        { id: 't1', title: 'Optimize DADA2 16S microbiome pipeline script', channel: 'microbiome-pipeline', method: 'CS', assignee: 'maya_cs', status: 'in-progress', tool: 'GitHub', due: '2026-10-05' },
+        { id: 't2', title: 'Run linear mixed model on dietary fiber cohort data', channel: 'personalized-nutrition', method: 'Stats', assignee: 'sam_stats', status: 'todo', tool: 'REDCap', due: '2026-10-12' },
+        { id: 't3', title: 'Code semi-structured focus group transcripts in NVivo', channel: 'dietary-survey', method: 'Qual', assignee: 'elena_qual', status: 'completed', tool: 'NVivo', due: '2026-09-28' },
+        { id: 't4', title: 'Verify stool sample freezer log & metadata alignment', channel: 'gut-brain-axis', method: 'Nutrition', assignee: 'awlin', status: 'in-progress', tool: 'BoxDrive', due: '2026-10-02' }
+    ];
+
+    // Reactive State Variables
+    let users = [];
+    let channels = [];
+    let tasks = [];
+    let currentUser = null;
+    let currentView = 'tasks';
+    let currentChannelFilter = 'ALL';
+    let currentMethodFilter = 'ALL';
+
+    // Mascot State
+    let activeMascot = 'axolotl';
+    const mascots = {
+        axolotl: { name: 'Toby', type: 'Axolotl', emoji: '🦎', bio: 'Lab mascot who loves clean datasets.', happy: 85, energy: 70, hunger: 90 },
+        microbe: { name: 'Pip', type: 'Gut Microbe', emoji: '🦠', bio: 'Fibers make Pip thrive and replicate.', happy: 90, energy: 80, hunger: 75 },
+        mouse: { name: 'Newton', type: 'Lab Mouse', emoji: '🐭', bio: 'Enjoys cognitive maze challenges.', happy: 75, energy: 90, hunger: 80 },
+        penguin: { name: 'Penny', type: 'Penguin', emoji: '🐧', bio: 'Expert at cold-chain sample preservation.', happy: 95, energy: 85, hunger: 85 }
+    };
+
+    window.onload = function() {
+        initLocalStorage();
+        checkSession();
+        renderChannels();
+        renderCurrentView();
+        updateMascotDisplay();
+        logActivity('System initialized. Ready for collaborative research operations.');
+    };
+
+    function initLocalStorage() {
+        if (!localStorage.getItem(STORAGE_KEY_USERS)) {
+            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(defaultUsers));
+        }
+        if (!localStorage.getItem(STORAGE_KEY_CHANNELS)) {
+            localStorage.setItem(STORAGE_KEY_CHANNELS, JSON.stringify(defaultChannels));
+        }
+        if (!localStorage.getItem(STORAGE_KEY_TASKS)) {
+            localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(defaultTasks));
+        }
+
+        users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS));
+        channels = JSON.parse(localStorage.getItem(STORAGE_KEY_CHANNELS));
+        tasks = JSON.parse(localStorage.getItem(STORAGE_KEY_TASKS));
+    }
+
+    function checkSession() {
+        const sessionUsername = localStorage.getItem(STORAGE_KEY_SESSION);
+        if (sessionUsername) {
+            const foundUser = users.find(u => u.username === sessionUsername);
+            if (foundUser) {
+                currentUser = foundUser;
+                document.getElementById('auth-modal').classList.add('hidden');
+                updateUserUI();
+                return;
+            }
+        }
+        document.getElementById('auth-modal').classList.remove('hidden');
+    }
+
+    function fillLogin(u, p) {
+        document.getElementById('login-username').value = u;
+        document.getElementById('login-password').value = p;
+    }
+
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const u = document.getElementById('login-username').value.trim();
+        const p = document.getElementById('login-password').value.trim();
+
+        const user = users.find(user => user.username === u && user.pass === p);
+        if (user) {
+            currentUser = user;
+            localStorage.setItem(STORAGE_KEY_SESSION, user.username);
+            document.getElementById('auth-modal').classList.add('hidden');
+            document.getElementById('login-error').classList.add('hidden');
+            updateUserUI();
+            logActivity(`User ${user.name} (@${user.username}) signed in.`);
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+        } else {
+            document.getElementById('login-error').classList.remove('hidden');
+        }
+    });
+
+    function logout() {
+        localStorage.removeItem(STORAGE_KEY_SESSION);
+        currentUser = null;
+        document.getElementById('auth-modal').classList.remove('hidden');
+    }
+
+    function updateUserUI() {
+        if (!currentUser) return;
+        document.getElementById('user-display-name').innerText = currentUser.name;
+        document.getElementById('user-role-badge').innerText = `${currentUser.role} (${currentUser.discipline})`;
+        document.getElementById('user-avatar').innerText = currentUser.name.split(' ').map(n => n[0]).join('');
+
+        const adminNav = document.getElementById('admin-nav-item');
+        const adminIndicator = document.getElementById('admin-indicator');
+
+        if (currentUser.admin || currentUser.username === 'awlin') {
+            adminNav.classList.remove('hidden');
+            adminNav.classList.add('flex');
+            adminIndicator.classList.remove('hidden');
+        } else {
+            adminNav.classList.add('hidden');
+            adminNav.classList.remove('flex');
+            adminIndicator.classList.add('hidden');
+            if (currentView === 'admin') switchView('tasks');
+        }
+
+        populateAssigneeOptions();
+    }
+
+    function switchView(viewName) {
+        currentView = viewName;
+
+        // Hide all view containers
+        ['tasks', 'kanban', 'timeline', 'playbooks', 'simulators', 'admin', 'mascot'].forEach(v => {
+            const el = document.getElementById(`view-${v}-container`);
+            if (el) el.classList.add('hidden');
+            const nav = document.getElementById(`nav-${v}`);
+            if (nav) {
+                nav.classList.remove('bg-indigo-600/20', 'border-indigo-500/30', 'text-indigo-300');
+                nav.classList.add('text-slate-400');
+            }
+        });
+
+        // Show active view container
+        const targetView = document.getElementById(`view-${viewName}-container`);
+        if (targetView) targetView.classList.remove('hidden');
+
+        // Update nav styling
+        const activeNav = document.getElementById(`nav-${viewName}`);
+        if (activeNav) {
+            activeNav.classList.add('bg-indigo-600/20', 'border-indigo-500/30', 'text-indigo-300');
+            activeNav.classList.remove('text-slate-400');
+        }
+
+        // Update Header Title
+        const titleMap = {
+            tasks: '<i class="fa-solid fa-list-check text-indigo-400"></i><span>Task Manager</span>',
+            kanban: '<i class="fa-solid fa-columns text-indigo-400"></i><span>Kanban Board</span>',
+            timeline: '<i class="fa-solid fa-chart-gantt text-indigo-400"></i><span>Timeline & Gantt</span>',
+            playbooks: '<i class="fa-solid fa-book-bookmark text-indigo-400"></i><span>Onboarding Playbooks</span>',
+            simulators: '<i class="fa-solid fa-bolt text-indigo-400"></i><span>Workflow Automation Simulators</span>',
+            admin: '<i class="fa-solid fa-users-gear text-amber-400"></i><span class="text-amber-400">Lab Roster Management (Admin)</span>',
+            mascot: '<i class="fa-solid fa-heart text-rose-400"></i><span>Lab Mascot Hub</span>'
+        };
+        document.getElementById('view-title').innerHTML = titleMap[viewName] || 'ResearcHERO';
+
+        renderCurrentView();
+    }
+
+    function renderCurrentView() {
+        if (currentView === 'tasks') renderTaskList();
+        if (currentView === 'kanban') renderKanban();
+        if (currentView === 'timeline') renderTimeline();
+        if (currentView === 'admin') renderAdminRoster();
+    }
+
+    function filterTasks() {
+        const query = document.getElementById('global-search').value.toLowerCase();
+        return tasks.filter(t => {
+            const matchesChannel = currentChannelFilter === 'ALL' || t.channel === currentChannelFilter;
+            const matchesMethod = currentMethodFilter === 'ALL' || t.method === currentMethodFilter;
+            const matchesSearch = t.title.toLowerCase().includes(query) || 
+                                  t.assignee.toLowerCase().includes(query) || 
+                                  t.tool.toLowerCase().includes(query);
+            return matchesChannel && matchesMethod && matchesSearch;
+        });
+    }
+
+    function setMethodologyFilter(m) {
+        currentMethodFilter = m;
+        document.querySelectorAll('.method-btn').forEach(btn => {
+            btn.classList.remove('bg-indigo-600', 'text-white');
+            btn.classList.add('bg-slate-800', 'text-slate-300');
+        });
+        const activeBtn = document.getElementById(`method-${m}`);
+        if (activeBtn) {
+            activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+            activeBtn.classList.add('bg-indigo-600', 'text-white');
+        }
+        renderCurrentView();
+    }
+
+    function filterByChannel(channel) {
+        currentChannelFilter = channel;
+        const badge = document.getElementById('channel-badge');
+        if (channel === 'ALL') {
+            badge.innerText = '#all-projects';
+        } else {
+            badge.innerText = `#${channel}`;
+        }
+        badge.classList.remove('hidden');
+        renderChannels();
+        renderCurrentView();
+    }
+
+    function renderTaskList() {
+        const filtered = filterTasks();
+        const listEl = document.getElementById('task-list');
+        document.getElementById('task-counter').innerText = `Showing ${filtered.length} tasks`;
+
+        if (filtered.length === 0) {
+            listEl.innerHTML = `<div class="p-8 text-center text-slate-500 text-xs">No tasks match current filter selection.</div>`;
+            return;
+        }
+
+        listEl.innerHTML = filtered.map(t => {
+            const userObj = users.find(u => u.username === t.assignee) || { name: t.assignee };
+            const methodColors = {
+                CS: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                Stats: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                Qual: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+                Nutrition: 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+            };
+
+            return `
+                <div class="p-4 hover:bg-slate-900/50 transition flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div class="flex items-start space-x-3">
+                        <button onclick="toggleTaskStatus('${t.id}')" class="mt-0.5 text-slate-500 hover:text-emerald-400 transition">
+                            <i class="${t.status === 'completed' ? 'fa-solid fa-circle-check text-emerald-400 text-base' : 'fa-regular fa-circle text-base'}"></i>
+                        </button>
+                        <div>
+                            <span class="text-xs font-medium ${t.status === 'completed' ? 'line-through text-slate-500' : 'text-slate-100'}">${escapeHtml(t.title)}</span>
+                            <div class="flex flex-wrap items-center gap-2 mt-1">
+                                <span class="text-[10px] px-2 py-0.5 rounded-full border ${methodColors[t.method] || 'bg-slate-800 text-slate-400'}">#${t.method}</span>
+                                <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md">#${t.channel}</span>
+                                <span class="text-[10px] bg-indigo-500/10 text-indigo-300 px-2 py-0.5 rounded-md border border-indigo-500/20">
+                                    <i class="fa-solid fa-wrench mr-1"></i>${t.tool}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between md:justify-end gap-4 text-xs text-slate-400">
+                        <div class="flex items-center space-x-1.5">
+                            <i class="fa-solid fa-user-circle"></i>
+                            <span>${userObj.name}</span>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <i class="fa-regular fa-calendar"></i>
+                            <span>${t.due}</span>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <button onclick="editTask('${t.id}')" class="p-1 hover:text-indigo-400"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="deleteTask('${t.id}')" class="p-1 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderKanban() {
+        const filtered = filterTasks();
+        const todoContainer = document.getElementById('kanban-todo');
+        const inProgContainer = document.getElementById('kanban-in-progress');
+        const compContainer = document.getElementById('kanban-completed');
+
+        const todos = filtered.filter(t => t.status === 'todo');
+        const inProgs = filtered.filter(t => t.status === 'in-progress');
+        const comps = filtered.filter(t => t.status === 'completed');
+
+        document.getElementById('kanban-todo-count').innerText = todos.length;
+        document.getElementById('kanban-in-progress-count').innerText = inProgs.length;
+        document.getElementById('kanban-completed-count').innerText = comps.length;
+
+        const renderCard = (t) => `
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 space-y-2 shadow-sm hover:border-slate-700 transition">
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-medium text-slate-200">${escapeHtml(t.title)}</span>
+                    <button onclick="deleteTask('${t.id}')" class="text-slate-600 hover:text-rose-400 text-xs"><i class="fa-solid fa-times"></i></button>
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-slate-400">
+                    <span class="bg-slate-800 px-2 py-0.5 rounded text-indigo-300">#${t.method}</span>
+                    <span><i class="fa-regular fa-calendar mr-1"></i>${t.due}</span>
+                </div>
+            </div>
+        `;
+
+        todoContainer.innerHTML = todos.map(renderCard).join('') || '<div class="text-xs text-slate-600 text-center py-4">Empty</div>';
+        inProgContainer.innerHTML = inProgs.map(renderCard).join('') || '<div class="text-xs text-slate-600 text-center py-4">Empty</div>';
+        compContainer.innerHTML = comps.map(renderCard).join('') || '<div class="text-xs text-slate-600 text-center py-4">Empty</div>';
+    }
+
+    function renderTimeline() {
+        const filtered = filterTasks();
+        const container = document.getElementById('timeline-chart');
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="text-slate-500 text-xs text-center py-8">No tasks found for timeline display.</div>';
+            return;
+        }
+
+        container.innerHTML = filtered.map(t => {
+            const widthPct = Math.floor(Math.random() * 40) + 30; // Simulated timeline visual
+            const offsetPct = Math.floor(Math.random() * 30);
+            return `
+                <div class="space-y-1">
+                    <div class="flex justify-between text-xs text-slate-300">
+                        <span class="font-medium">${escapeHtml(t.title)}</span>
+                        <span class="text-slate-500 text-[10px]">Target: ${t.due}</span>
+                    </div>
+                    <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden relative">
+                        <div class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full transition-all" style="width: ${widthPct}%; margin-left: ${offsetPct}%"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderAdminRoster() {
+        const body = document.getElementById('admin-roster-body');
+        body.innerHTML = users.map(u => {
+            const isAwlin = u.username === 'awlin';
+            return `
+                <tr class="hover:bg-slate-900/60 transition border-b border-slate-800/40">
+                    <td class="p-3 font-semibold text-slate-100 flex items-center space-x-2">
+                        <div class="w-7 h-7 rounded-lg bg-indigo-600/30 text-indigo-300 flex items-center justify-center text-xs font-bold">
+                            ${u.name.split(' ').map(n=>n[0]).join('')}
+                        </div>
+                        <span>${escapeHtml(u.name)}</span>
+                    </td>
+                    <td class="p-3 font-mono text-slate-300">@${escapeHtml(u.username)}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-indigo-300 border border-slate-700">
+                            ${u.discipline || 'General'}
+                        </span>
+                    </td>
+                    <td class="p-3">
+                        ${u.admin ? 
+                            '<span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full"><i class="fa-solid fa-crown mr-1"></i> Admin</span>' : 
+                            '<span class="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">Standard</span>'}
+                    </td>
+                    <td class="p-3 text-right">
+                        ${isAwlin ? 
+                            '<span class="text-[10px] text-slate-500 italic">Owner (Protected)</span>' : 
+                            `<button onclick="removeLabMember('${u.id}')" class="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-xs transition">
+                                <i class="fa-solid fa-user-minus mr-1"></i> Remove
+                             </button>`
+                        }
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function openAddMemberModal() {
+        if (!currentUser.admin && currentUser.username !== 'awlin') {
+            alert("Admin privileges required.");
+            return;
+        }
+        document.getElementById('admin-member-modal').classList.remove('hidden');
+    }
+
+    function closeAddMemberModal() {
+        document.getElementById('admin-member-modal').classList.add('hidden');
+    }
+
+    function saveMember(e) {
+        e.preventDefault();
+        const fullname = document.getElementById('member-fullname').value.trim();
+        const username = document.getElementById('member-username').value.trim().toLowerCase();
+        const password = document.getElementById('member-password').value.trim();
+        const discipline = document.getElementById('member-discipline').value;
+        const roleSel = document.getElementById('member-role').value;
+
+        if (users.some(u => u.username === username)) {
+            alert('Username already exists in system.');
+            return;
+        }
+
+        const newMember = {
+            id: 'u_' + Date.now(),
+            username,
+            name: fullname,
+            role: roleSel,
+            admin: roleSel === 'Admin',
+            pass: password,
+            discipline
+        };
+
+        users.push(newMember);
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+        closeAddMemberModal();
+        populateAssigneeOptions();
+        renderAdminRoster();
+        logActivity(`Admin added new lab member ${fullname} (@${username}).`);
+        confetti({ particleCount: 40, spread: 50 });
+    }
+
+    function removeLabMember(id) {
+        const member = users.find(u => u.id === id);
+        if (!member) return;
+        if (member.username === 'awlin') return;
+
+        users = users.filter(u => u.id !== id);
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+        populateAssigneeOptions();
+        renderAdminRoster();
+        logActivity(`Admin removed lab member ${member.name} (@${member.username}).`);
+    }
+
+    function renderChannels() {
+        const container = document.getElementById('channels-list');
+        container.innerHTML = `
+            <button onclick="filterByChannel('ALL')" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium ${currentChannelFilter === 'ALL' ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-400 hover:bg-slate-900'} flex items-center justify-between">
+                <span># all-projects</span>
+            </button>
+        ` + channels.map(c => `
+            <div class="flex items-center justify-between group px-2.5 py-1 rounded-lg text-xs hover:bg-slate-900 transition ${currentChannelFilter === c ? 'bg-indigo-600/20 text-indigo-300 font-semibold' : 'text-slate-400'}">
+                <button onclick="filterByChannel('${c}')" class="truncate text-left flex-1"># ${c}</button>
+                <button onclick="deleteChannel('${c}')" class="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 p-1"><i class="fa-solid fa-times"></i></button>
+            </div>
+        `).join('');
+
+        // Populate task modal dropdown
+        const select = document.getElementById('task-channel');
+        select.innerHTML = channels.map(c => `<option value="${c}"># ${c}</option>`).join('');
+    }
+
+    function openChannelModal() { document.getElementById('channel-modal').classList.remove('hidden'); }
+    function closeChannelModal() { document.getElementById('channel-modal').classList.add('hidden'); }
+
+    function saveChannel(e) {
+        e.preventDefault();
+        const val = document.getElementById('channel-name').value.trim().toLowerCase().replace(/\s+/g, '-');
+        if (val && !channels.includes(val)) {
+            channels.push(val);
+            localStorage.setItem(STORAGE_KEY_CHANNELS, JSON.stringify(channels));
+            renderChannels();
+            closeChannelModal();
+            logActivity(`New project channel created: #${val}`);
+        }
+    }
+
+    function deleteChannel(c) {
+        channels = channels.filter(item => item !== c);
+        localStorage.setItem(STORAGE_KEY_CHANNELS, JSON.stringify(channels));
+        if (currentChannelFilter === c) filterByChannel('ALL');
+        renderChannels();
+    }
+
+    function populateAssigneeOptions() {
+        const select = document.getElementById('task-assignee');
+        select.innerHTML = users.map(u => `<option value="${u.username}">${u.name} (${u.discipline})</option>`).join('');
+    }
+
+    function openTaskModal() {
+        document.getElementById('task-edit-id').value = '';
+        document.getElementById('task-form').reset();
+        document.getElementById('task-modal-title').innerText = 'Create Research Task';
+        document.getElementById('task-modal').classList.remove('hidden');
+    }
+
+    function closeTaskModal() {
+        document.getElementById('task-modal').classList.add('hidden');
+    }
+
+    function saveTask(e) {
+        e.preventDefault();
+        const id = document.getElementById('task-edit-id').value;
+        const title = document.getElementById('task-title').value;
+        const channel = document.getElementById('task-channel').value;
+        const method = document.getElementById('task-method').value;
+        const assignee = document.getElementById('task-assignee').value;
+        const status = document.getElementById('task-status').value;
+        const tool = document.getElementById('task-tool').value;
+        const due = document.getElementById('task-due').value;
+
+        if (id) {
+            const t = tasks.find(x => x.id === id);
+            if (t) {
+                t.title = title; t.channel = channel; t.method = method;
+                t.assignee = assignee; t.status = status; t.tool = tool; t.due = due;
+            }
+        } else {
+            tasks.push({ id: 't_' + Date.now(), title, channel, method, assignee, status, tool, due });
+            logActivity(`Task created: "${title}" assigned to @${assignee}`);
+        }
+
+        localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(tasks));
+        closeTaskModal();
+        renderCurrentView();
+    }
+
+    function editTask(id) {
+        const t = tasks.find(x => x.id === id);
+        if (!t) return;
+        document.getElementById('task-edit-id').value = t.id;
+        document.getElementById('task-title').value = t.title;
+        document.getElementById('task-channel').value = t.channel;
+        document.getElementById('task-method').value = t.method;
+        document.getElementById('task-assignee').value = t.assignee;
+        document.getElementById('task-status').value = t.status;
+        document.getElementById('task-tool').value = t.tool;
+        document.getElementById('task-due').value = t.due;
+        document.getElementById('task-modal-title').innerText = 'Edit Research Task';
+        document.getElementById('task-modal').classList.remove('hidden');
+    }
+
+    function toggleTaskStatus(id) {
+        const t = tasks.find(x => x.id === id);
+        if (t) {
+            t.status = t.status === 'completed' ? 'todo' : 'completed';
+            localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(tasks));
+            renderCurrentView();
+            if (t.status === 'completed') confetti({ particleCount: 30, spread: 40 });
+        }
+    }
+
+    function deleteTask(id) {
+        tasks = tasks.filter(x => x.id !== id);
+        localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(tasks));
+        renderCurrentView();
+    }
+
+    function applyPlaybook(type) {
+        const playbooks = {
+            cs: [
+                { title: 'SSH key setup & Lab GitHub org permission verification', method: 'CS', tool: 'GitHub' },
+                { title: 'Conda environment creation for RNA-seq/16S pipelines', method: 'CS', tool: 'GitHub' },
+                { title: 'Execute sample verification benchmark test', method: 'CS', tool: 'GitHub' }
+            ],
+            stats: [
+                { title: 'Request REDCap API Token for research cohort access', method: 'Stats', tool: 'REDCap' },
+                { title: 'Run R script data integrity check on baseline intake', method: 'Stats', tool: 'REDCap' },
+                { title: 'Complete IRB protocol & data confidentiality review', method: 'Stats', tool: 'BoxDrive' }
+            ],
+            qual: [
+                { title: 'Install & setup NVivo multi-user project file key', method: 'Qual', tool: 'NVivo' },
+                { title: 'Import semi-structured interview audio transcripts', method: 'Qual', tool: 'NVivo' },
+                { title: 'Establish inter-rater reliability codebook agreement', method: 'Qual', tool: 'NVivo' }
+            ],
+            nutrition: [
+                { title: 'Verify sample cold-chain storage log (-80°C freezer)', method: 'Nutrition', tool: 'BoxDrive' },
+                { title: 'Prepare 16S microbiome amplicon sequencing library', method: 'Nutrition', tool: 'BoxDrive' },
+                { title: 'Log reagent lot numbers into lab management inventory', method: 'Nutrition', tool: 'BoxDrive' }
+            ]
+        };
+
+        const list = playbooks[type] || [];
+        list.forEach(p => {
+            tasks.push({
+                id: 't_' + Date.now() + Math.random(),
+                title: p.title,
+                channel: channels[0] || 'general',
+                method: p.method,
+                assignee: currentUser ? currentUser.username : 'awlin',
+                status: 'todo',
+                tool: p.tool,
+                due: '2026-10-15'
+            });
+        });
+
+        localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(tasks));
+        logActivity(`Imported ${list.length} onboarding tasks from ${type.toUpperCase()} playbook.`);
+        confetti({ particleCount: 35 });
+        switchView('tasks');
+    }
+
+    function runSim(type) {
+        const log = document.getElementById('sim-log');
+        const ts = new Date().toLocaleTimeString();
+        if (type === 'github') {
+            log.innerHTML += `<div>[${ts}] [GITHUB HOOK] Commit e7f8a92 pushed to main by @maya_cs.</div>`;
+            log.innerHTML += `<div class="text-indigo-400">[${ts}] Auto-completed: "Optimize DADA2 16S microbiome pipeline script"</div>`;
+        } else if (type === 'redcap') {
+            log.innerHTML += `<div>[${ts}] [REDCAP API] 12 new participant records ingested into Cohort A.</div>`;
+            log.innerHTML += `<div class="text-emerald-400">[${ts}] Triggered task: "Run linear mixed model on dietary fiber cohort data"</div>`;
+        } else if (type === 'nvivo') {
+            log.innerHTML += `<div>[${ts}] [NVIVO SYNC] Transcripts synced for Subject #104.</div>`;
+            log.innerHTML += `<div class="text-purple-400">[${ts}] Status updated: Qualitative codebook ready.</div>`;
+        }
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function selectMascot(key) {
+        activeMascot = key;
+        ['axolotl', 'microbe', 'mouse', 'penguin'].forEach(k => {
+            const btn = document.getElementById(`mascot-tab-${k}`);
+            if (btn) {
+                if (k === key) {
+                    btn.className = 'px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 text-white transition';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+                }
+            }
+        });
+        updateMascotDisplay();
+    }
+
+    function updateMascotDisplay() {
+        const m = mascots[activeMascot];
+        document.getElementById('mascot-avatar').innerText = m.emoji;
+        document.getElementById('mascot-full-name').innerText = `${m.name} the ${m.type}`;
+        document.getElementById('mascot-bio').innerText = m.bio;
+
+        document.getElementById('vital-happy-num').innerText = `${m.happy}%`;
+        document.getElementById('vital-happy-bar').style.width = `${m.happy}%`;
+
+        document.getElementById('vital-energy-num').innerText = `${m.energy}%`;
+        document.getElementById('vital-energy-bar').style.width = `${m.energy}%`;
+
+        document.getElementById('vital-hunger-num').innerText = `${m.hunger}%`;
+        document.getElementById('vital-hunger-bar').style.width = `${m.hunger}%`;
+
+        // Update sidebar mascot preview
+        document.getElementById('sidebar-mascot-avatar').innerText = m.emoji;
+        document.getElementById('sidebar-mascot-name').innerText = m.name;
+        document.getElementById('sidebar-mascot-type').innerText = m.type;
+        document.getElementById('sidebar-mascot-hp').style.width = `${m.happy}%`;
+    }
+
+    function feedMascot() {
+        const m = mascots[activeMascot];
+        m.hunger = Math.min(100, m.hunger + 15);
+        m.happy = Math.min(100, m.happy + 5);
+        document.getElementById('mascot-speech').innerText = `"Yum! That research snack boosted my energy!"`;
+        updateMascotDisplay();
+        confetti({ particleCount: 20 });
+    }
+
+    function petMascot() {
+        const m = mascots[activeMascot];
+        m.happy = Math.min(100, m.happy + 10);
+        document.getElementById('mascot-speech').innerText = `"Purr... ready to double check your data!"`;
+        updateMascotDisplay();
+    }
+
+    function playBreather() {
+        document.getElementById('mascot-speech').innerText = `"Take a deep breath in... and exhale... Great job."`;
+        confetti({ particleCount: 40, spread: 70 });
+    }
+
+    function logActivity(msg) {
+        const feed = document.getElementById('live-feed');
+        const item = document.createElement('div');
+        item.className = 'flex items-center space-x-2 bg-slate-900/60 p-2 rounded-lg border border-slate-800/60';
+        item.innerHTML = `
+            <span class="text-[10px] text-slate-500 font-mono">${new Date().toLocaleTimeString()}</span>
+            <span class="text-slate-300 truncate">${msg}</span>
+        `;
+        feed.prepend(item);
+        if (feed.children.length > 5) feed.removeChild(feed.lastChild);
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+</script>
+</body>
+</html>
